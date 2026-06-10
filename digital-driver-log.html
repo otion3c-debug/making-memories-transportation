@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MMT Driver Log</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --red: #B22222;
+    --red-dark: #8B1A1A;
+    --red-light: #DC3545;
+    --white: #FFFFFF;
+    --off-white: #F8F8F8;
+    --gray-100: #F0F0F0;
+    --gray-200: #E0E0E0;
+    --gray-400: #999;
+    --gray-600: #666;
+    --gray-800: #333;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--off-white);
+    color: var(--gray-800);
+    padding: 0;
+    padding-bottom: 80px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .app-header {
+    background: linear-gradient(135deg, var(--red-dark), var(--red));
+    color: white;
+    padding: 16px 20px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-header h1 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+  .app-header p {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--red-dark);
+    gap: 1px;
+  }
+  .tabs button {
+    flex: 1;
+    border: none;
+    background: var(--red);
+    color: rgba(255,255,255,0.7);
+    padding: 12px 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tabs button.active {
+    background: var(--white);
+    color: var(--red);
+  }
+  .tabs button:first-child { border-radius: 0 0 0 0; }
+  .tabs button:last-child { border-radius: 0 0 0 0; }
+
+  .tab-content { display: none; padding: 16px; }
+  .tab-content.active { display: block; }
+
+  /* FORM ELEMENTS */
+  .form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .form-section h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--red);
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .form-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .form-row label {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+  .form-row input, .form-row select, .form-row textarea {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: var(--off-white);
+    transition: border-color 0.2s;
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    outline: none;
+    border-color: var(--red);
+    background: white;
+  }
+  .form-row textarea { min-height: 60px; resize: vertical; }
+
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: center;
+  }
+  .btn-primary { background: var(--red); color: white; }
+  .btn-primary:hover { background: var(--red-dark); }
+  .btn-secondary { background: var(--gray-100); color: var(--gray-800); }
+  .btn-secondary:hover { background: var(--gray-200); }
+  .btn-danger { background: #fff; color: var(--red); border: 1px solid var(--red); }
+  .btn-danger:hover { background: #fff5f5; }
+  .btn-sm { padding: 8px 16px; font-size: 0.85rem; width: auto; }
+
+  .inline-btn {
+    background: none;
+    border: none;
+    color: var(--red);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .inline-btn:hover { text-decoration: underline; }
+
+  /* AUTO-CALC DISPLAY */
+  .calc-display {
+    background: var(--off-white);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+  }
+  .calc-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.95rem;
+  }
+  .calc-row.total {
+    border-top: 2px solid var(--red);
+    margin-top: 6px;
+    padding-top: 8px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--red);
+  }
+
+  /* HISTORY */
+  .history-list { list-style: none; }
+  .history-item {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .history-item:active { transform: scale(0.98); }
+  .history-item .date {
+    font-weight: 700;
+    color: var(--red);
+    font-size: 1rem;
+  }
+  .history-item .driver { font-size: 0.85rem; color: var(--gray-600); }
+  .history-item .summary {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 0.9rem;
+  }
+  .history-item .net { font-weight: 700; }
+  .history-item .net.positive { color: #2e7d32; }
+  .history-item .net.negative { color: var(--red); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray-400);
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.95rem; }
+
+  /* DETAIL VIEW */
+  .detail-view { display: none; }
+  .detail-view.active { display: block; }
+  .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--red);
+    padding: 4px 8px;
+  }
+
+  /* EDIT ROW */
+  .edit-mode input { border-color: var(--red) !important; background: #fff8f8 !important; }
+
+  /* EXPORT */
+  .export-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .export-actions .btn { flex: 1; }
+
+  /* CASH COUNT */
+  .cash-count-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .cash-count-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cash-count-item label {
+    font-size: 0.85rem;
+    min-width: 50px;
+    color: var(--gray-600);
+  }
+  .cash-count-item input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gray-800);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1000;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>🚐 MMT Driver Log</h1>
+  <p>Making Memories Transportation — Daily Cash Sheet</p>
+</div>
+
+<div class="tabs">
+  <button class="active" onclick="switchTab('log')" id="tab-log">📝 New Log</button>
+  <button onclick="switchTab('history')" id="tab-history">📋 History</button>
+  <button onclick="switchTab('export')" id="tab-export">📤 Export</button>
+</div>
+
+<!-- ===== TAB: NEW LOG ===== -->
+<div id="content-log" class="tab-content active">
+
+  <form id="dayForm" onsubmit="saveEntry(event)">
+    <!-- INFO -->
+    <div class="form-section">
+      <h3>Shift Info</h3>
+      <div class="form-row">
+        <label>Date</label>
+        <input type="date" id="entryDate" required>
+      </div>
+      <div class="form-row">
+        <label>Driver</label>
+        <input type="text" id="driverName" placeholder="Driver name" required>
+      </div>
+      <div class="form-row">
+        <label>Vehicle</label>
+        <input type="text" id="vehicleNum" placeholder="Vehicle #">
+      </div>
+      <div class="form-row">
+        <label>Shift</label>
+        <select id="shift">
+          <option value="Morning">Morning</option>
+          <option value="Afternoon">Afternoon</option>
+          <option value="Evening">Evening</option>
+          <option value="Full Day">Full Day</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- REVENUE -->
+    <div class="form-section">
+      <h3>💰 Revenue</h3>
+      <div class="form-row">
+        <label>Cash Fares</label>
+        <input type="number" id="cashFares" class="revenue" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Card / App Fares</label>
+        <input type="number" id="cardFares" class="revenue" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Tips — Cash</label>
+        <input type="number" id="tipsCash" class="revenue" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Tips — Card / App</label>
+        <input type="number" id="tipsCard" class="revenue" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Charter / Contract</label>
+        <input type="number" id="charter" class="revenue" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Other Income</label>
+        <input type="number" id="otherIncome" class="revenue" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="calc-display">
+        <div class="calc-row"><span>Total Revenue</span><span id="totalRevenue">$0.00</span></div>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="form-section">
+      <h3>⛽ Expenses</h3>
+      <div class="form-row">
+        <label>Fuel</label>
+        <input type="number" id="fuel" class="expense" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Tolls</label>
+        <input type="number" id="tolls" class="expense" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Parking</label>
+        <input type="number" id="parking" class="expense" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Wash / Detail</label>
+        <input type="number" id="wash" class="expense" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Maintenance</label>
+        <input type="number" id="maintenance" class="expense" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Supplies</label>
+        <input type="number" id="supplies" class="expense" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="form-row">
+        <label>Miscellaneous</label>
+        <input type="number" id="miscExpense" class="expense" min="0" step="0.01" value="0" oninput="calcTotals()">
+      </div>
+      <div class="calc-display">
+        <div class="calc-row"><span>Total Expenses</span><span id="totalExpenses">$0.00</span></div>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="form-section" style="border: 2px solid var(--red);">
+      <h3>📊 Net Summary</h3>
+      <div class="calc-row"><span>Total Revenue</span><span id="summaryRevenue">$0.00</span></div>
+      <div class="calc-row"><span>Total Expenses</span><span id="summaryExpenses">$0.00</span></div>
+      <div class="calc-row total"><span>Net Deposit Due</span><span id="summaryNet">$0.00</span></div>
+    </div>
+
+    <!-- CASH COUNT -->
+    <div class="form-section">
+      <h3>💵 Cash Breakdown (Optional)</h3>
+      <div class="cash-count-grid">
+        <div class="cash-count-item"><label>$20s</label><input type="number" id="twenties" min="0" value="0"></div>
+        <div class="cash-count-item"><label>$10s</label><input type="number" id="tens" min="0" value="0"></div>
+        <div class="cash-count-item"><label>$5s</label><input type="number" id="fives" min="0" value="0"></div>
+        <div class="cash-count-item"><label>$1s</label><input type="number" id="ones" min="0" value="0"></div>
+      </div>
+      <div class="calc-row" style="margin-top:8px;font-size:0.85rem;">
+        <span>Cash Total:</span>
+        <span id="cashTotal">$0.00</span>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="form-section">
+      <h3>📝 Notes</h3>
+      <div class="form-row">
+        <textarea id="notes" placeholder="Issues, incidents, special trips, anything to flag..."></textarea>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="margin-top:8px;">💾 Save Day Entry</button>
+  </form>
+
+  <button class="btn btn-secondary" style="margin-top:12px;" onclick="clearForm()">Reset Form</button>
+</div>
+
+<!-- ===== TAB: HISTORY ===== -->
+<div id="content-history" class="tab-content">
+  <div id="historyListView">
+    <h3 style="font-size:1rem;margin-bottom:12px;color:var(--gray-600);">Past Entries</h3>
+    <ul class="history-list" id="historyList"></ul>
+  </div>
+
+  <div class="detail-view" id="detailView">
+    <div class="detail-header">
+      <button class="back-btn" onclick="closeDetail()">←</button>
+      <h3 style="color:var(--red);" id="detailTitle">Entry Detail</h3>
+    </div>
+    <div id="detailContent"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-danger btn-sm" onclick="deleteEntry()" style="flex:1;">🗑️ Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: EXPORT ===== -->
+<div id="content-export" class="tab-content">
+  <h3 style="font-size:1rem;margin-bottom:8px;color:var(--gray-600);">Export Your Data</h3>
+  <p style="font-size:0.85rem;color:var(--gray-600);margin-bottom:16px;">Download all entries as a spreadsheet or clear all data.</p>
+  <div class="export-actions">
+    <button class="btn btn-primary btn-sm" onclick="exportCSV()">📄 CSV</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportJSON()">📋 JSON</button>
+  </div>
+  <button class="btn btn-danger" onclick="clearAllData()">🗑️ Delete All Data</button>
+  <p style="font-size:0.75rem;color:var(--gray-400);margin-top:12px;">All data is stored on your phone — nothing is sent to a server.</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let entries = JSON.parse(localStorage.getItem('mmtDriverLog') || '[]');
+let currentEditId = null;
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today's date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('entryDate').value = today;
+  renderHistory();
+});
+
+// ===== TABS =====
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tabs button').forEach(el => el.classList.remove('active'));
+  document.getElementById(`content-${name}`).classList.add('active');
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if (name === 'history') renderHistory();
+}
+
+// ===== CALC =====
+function calcTotals() {
+  const rev = sum('.revenue');
+  const exp = sum('.expense');
+  document.getElementById('totalRevenue').textContent = fmt(rev);
+  document.getElementById('totalExpenses').textContent = fmt(exp);
+  document.getElementById('summaryRevenue').textContent = fmt(rev);
+  document.getElementById('summaryExpenses').textContent = fmt(exp);
+  document.getElementById('summaryNet').textContent = fmt(rev - exp);
+
+  // Cash count
+  const cash = (parseInt(document.getElementById('twenties').value)||0)*20
+             + (parseInt(document.getElementById('tens').value)||0)*10
+             + (parseInt(document.getElementById('fives').value)||0)*5
+             + (parseInt(document.getElementById('ones').value)||0)*1;
+  document.getElementById('cashTotal').textContent = fmt(cash);
+}
+
+function sum(cls) {
+  let total = 0;
+  document.querySelectorAll(cls).forEach(el => {
+    total += parseFloat(el.value) || 0;
+  });
+  return total;
+}
+
+function fmt(n) { return '$' + n.toFixed(2); }
+
+// ===== SAVE =====
+function saveEntry(e) {
+  e.preventDefault();
+  const entry = {
+    id: Date.now().toString(),
+    date: document.getElementById('entryDate').value,
+    driver: document.getElementById('driverName').value,
+    vehicle: document.getElementById('vehicleNum').value,
+    shift: document.getElementById('shift').value,
+    cashFares: parseFloat(document.getElementById('cashFares').value)||0,
+    cardFares: parseFloat(document.getElementById('cardFares').value)||0,
+    tipsCash: parseFloat(document.getElementById('tipsCash').value)||0,
+    tipsCard: parseFloat(document.getElementById('tipsCard').value)||0,
+    charter: parseFloat(document.getElementById('charter').value)||0,
+    otherIncome: parseFloat(document.getElementById('otherIncome').value)||0,
+    fuel: parseFloat(document.getElementById('fuel').value)||0,
+    tolls: parseFloat(document.getElementById('tolls').value)||0,
+    parking: parseFloat(document.getElementById('parking').value)||0,
+    wash: parseFloat(document.getElementById('wash').value)||0,
+    maintenance: parseFloat(document.getElementById('maintenance').value)||0,
+    supplies: parseFloat(document.getElementById('supplies').value)||0,
+    miscExpense: parseFloat(document.getElementById('miscExpense').value)||0,
+    twenties: parseInt(document.getElementById('twenties').value)||0,
+    tens: parseInt(document.getElementById('tens').value)||0,
+    fives: parseInt(document.getElementById('fives').value)||0,
+    ones: parseInt(document.getElementById('ones').value)||0,
+    notes: document.getElementById('notes').value,
+    createdAt: new Date().toISOString()
+  };
+
+  entry.totalRevenue = entry.cashFares + entry.cardFares + entry.tipsCash + entry.tipsCard + entry.charter + entry.otherIncome;
+  entry.totalExpenses = entry.fuel + entry.tolls + entry.parking + entry.wash + entry.maintenance + entry.supplies + entry.miscExpense;
+  entry.netTotal = entry.totalRevenue - entry.totalExpenses;
+
+  entries.unshift(entry);
+  localStorage.setItem('mmtDriverLog', JSON.stringify(entries));
+  showToast('✅ Entry saved!');
+  clearForm();
+  switchTab('history');
+}
+
+// ===== RENDER HISTORY =====
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const detailView = document.getElementById('detailView');
+  const listView = document.getElementById('historyListView');
+
+  detailView.classList.remove('active');
+  listView.style.display = 'block';
+
+  if (entries.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>No entries yet. Start logging your day!</p></div>`;
+    return;
+  }
+
+  list.innerHTML = entries.map(e => {
+    const netClass = e.netTotal >= 0 ? 'positive' : 'negative';
+    return `<li class="history-item" onclick="viewEntry('${e.id}')">
+      <div class="date">${formatDate(e.date)} <span style="font-weight:400;font-size:0.8rem;color:var(--gray-400);">${e.shift}</span></div>
+      <div class="driver">${esc(e.driver)} ${e.vehicle ? '· ' + esc(e.vehicle) : ''}</div>
+      <div class="summary">
+        <span>Revenue: ${fmt(e.totalRevenue)}</span>
+        <span>Net: <span class="net ${netClass}">${fmt(e.netTotal)}</span></span>
+      </div>
+    </li>`;
+  }).join('');
+}
+
+// ===== VIEW ENTRY =====
+function viewEntry(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  currentEditId = id;
+
+  document.getElementById('historyListView').style.display = 'none';
+  const detail = document.getElementById('detailView');
+  detail.classList.add('active');
+
+  document.getElementById('detailTitle').textContent = formatDate(e.date) + ' — ' + esc(e.driver);
+
+  const netClass = e.netTotal >= 0 ? 'positive' : 'negative';
+  const cashTotal = e.twenties*20 + e.tens*10 + e.fives*5 + e.ones*1;
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="form-section">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><strong>Driver:</strong> ${esc(e.driver)}</div>
+        <div><strong>Shift:</strong> ${esc(e.shift)}</div>
+        <div><strong>Vehicle:</strong> ${esc(e.vehicle||'—')}</div>
+        <div><strong>Date:</strong> ${formatDate(e.date)}</div>
+      </div>
+    </div>
+    <div class="form-section">
+      <h3>💰 Revenue</h3>
+      <div class="calc-row"><span>Cash Fares</span><span>${fmt(e.cashFares)}</span></div>
+      <div class="calc-row"><span>Card/App Fares</span><span>${fmt(e.cardFares)}</span></div>
+      <div class="calc-row"><span>Tips — Cash</span><span>${fmt(e.tipsCash)}</span></div>
+      <div class="calc-row"><span>Tips — Card/App</span><span>${fmt(e.tipsCard)}</span></div>
+      <div class="calc-row"><span>Charter/Contract</span><span>${fmt(e.charter)}</span></div>
+      <div class="calc-row"><span>Other Income</span><span>${fmt(e.otherIncome)}</span></div>
+      <div class="calc-row total"><span>Total Revenue</span><span>${fmt(e.totalRevenue)}</span></div>
+    </div>
+    <div class="form-section">
+      <h3>⛽ Expenses</h3>
+      <div class="calc-row"><span>Fuel</span><span>${fmt(e.fuel)}</span></div>
+      <div class="calc-row"><span>Tolls</span><span>${fmt(e.tolls)}</span></div>
+      <div class="calc-row"><span>Parking</span><span>${fmt(e.parking)}</span></div>
+      <div class="calc-row"><span>Wash/Detail</span><span>${fmt(e.wash)}</span></div>
+      <div class="calc-row"><span>Maintenance</span><span>${fmt(e.maintenance)}</span></div>
+      <div class="calc-row"><span>Supplies</span><span>${fmt(e.supplies)}</span></div>
+      <div class="calc-row"><span>Miscellaneous</span><span>${fmt(e.miscExpense)}</span></div>
+      <div class="calc-row total"><span>Total Expenses</span><span>${fmt(e.totalExpenses)}</span></div>
+    </div>
+    <div class="form-section" style="border:2px solid var(--red);">
+      <h3>📊 Net Summary</h3>
+      <div class="calc-row"><span>Revenue</span><span>${fmt(e.totalRevenue)}</span></div>
+      <div class="calc-row"><span>Expenses</span><span>${fmt(e.totalExpenses)}</span></div>
+      <div class="calc-row total"><span>Net Deposit Due</span><span class="net ${netClass}">${fmt(e.netTotal)}</span></div>
+    </div>
+    ${cashTotal > 0 ? `
+    <div class="form-section">
+      <h3>💵 Cash Breakdown</h3>
+      <div class="calc-row"><span>$${e.twenties} × $20</span><span>${fmt(e.twenties*20)}</span></div>
+      <div class="calc-row"><span>${e.tens} × $10</span><span>${fmt(e.tens*10)}</span></div>
+      <div class="calc-row"><span>${e.fives} × $5</span><span>${fmt(e.fives*5)}</span></div>
+      <div class="calc-row"><span>${e.ones} × $1</span><span>${fmt(e.ones*1)}</span></div>
+      <div class="calc-row total"><span>Cash on Hand</span><span>${fmt(cashTotal)}</span></div>
+    </div>` : ''}
+    ${e.notes ? `
+    <div class="form-section">
+      <h3>📝 Notes</h3>
+      <p style="font-size:0.9rem;color:var(--gray-600);white-space:pre-wrap;">${esc(e.notes)}</p>
+    </div>` : ''}
+  `;
+}
+
+function deleteEntry() {
+  if (!currentEditId) return;
+  if (!confirm('Delete this entry?')) return;
+  entries = entries.filter(e => e.id !== currentEditId);
+  localStorage.setItem('mmtDriverLog', JSON.stringify(entries));
+  showToast('🗑️ Entry deleted');
+  currentEditId = null;
+  closeDetail();
+  renderHistory();
+}
+
+function closeDetail() {
+  document.getElementById('detailView').classList.remove('active');
+  document.getElementById('historyListView').style.display = 'block';
+  currentEditId = null;
+}
+
+// ===== FORM HELPERS =====
+function clearForm() {
+  document.getElementById('dayForm').reset();
+  document.querySelectorAll('.revenue, .expense').forEach(el => el.value = '0');
+  document.getElementById('twenties').value = '0';
+  document.getElementById('tens').value = '0';
+  document.getElementById('fives').value = '0';
+  document.getElementById('ones').value = '0';
+  document.getElementById('notes').value = '';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('entryDate').value = today;
+  calcTotals();
+}
+
+// ===== EXPORT =====
+function exportCSV() {
+  if (entries.length === 0) { showToast('No entries to export'); return; }
+  const headers = ['Date','Driver','Vehicle','Shift','Cash Fares','Card/App Fares','Tips Cash','Tips Card/App','Charter','Other Income','Total Revenue','Fuel','Tolls','Parking','Wash/Detail','Maintenance','Supplies','Misc Expense','Total Expenses','Net Total','$20s','$10s','$5s','$1s','Cash Total','Notes'];
+  const rows = entries.map(e => [
+    e.date, escCSV(e.driver), escCSV(e.vehicle), escCSV(e.shift),
+    e.cashFares, e.cardFares, e.tipsCash, e.tipsCard, e.charter, e.otherIncome, e.totalRevenue,
+    e.fuel, e.tolls, e.parking, e.wash, e.maintenance, e.supplies, e.miscExpense, e.totalExpenses, e.netTotal,
+    e.twenties, e.tens, e.fives, e.ones,
+    e.twenties*20 + e.tens*10 + e.fives*5 + e.ones*1,
+    escCSV(e.notes||'')
+  ]);
+
+  let csv = headers.join(',') + '\n';
+  csv += rows.map(r => r.join(',')).join('\n');
+
+  download(csv, 'mmt-driver-log.csv', 'text/csv');
+  showToast('📄 CSV downloaded');
+}
+
+function exportJSON() {
+  if (entries.length === 0) { showToast('No entries to export'); return; }
+  const json = JSON.stringify(entries, null, 2);
+  download(json, 'mmt-driver-log.json', 'application/json');
+  showToast('📋 JSON downloaded');
+}
+
+function clearAllData() {
+  if (!confirm('Delete ALL driver log data? This cannot be undone.')) return;
+  entries = [];
+  localStorage.removeItem('mmtDriverLog');
+  showToast('🗑️ All data cleared');
+  renderHistory();
+}
+
+// ===== UTILITIES =====
+function download(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const opts = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+  return d.toLocaleDateString('en-US', opts);
+}
+
+function esc(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function escCSV(s) {
+  if (!s) return '';
+  s = String(s);
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

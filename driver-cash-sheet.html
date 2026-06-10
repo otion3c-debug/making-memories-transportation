@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Making Memories Transportation — Daily Driver Cash Sheet</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --red: #B22222;
+    --red-dark: #8B1A1A;
+    --red-light: #DC3545;
+    --white: #FFFFFF;
+    --off-white: #F8F8F8;
+    --gray-100: #F0F0F0;
+    --gray-200: #E0E0E0;
+    --gray-600: #666666;
+    --gray-800: #333;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--gray-800);
+    padding: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    border-bottom: 3px solid var(--red);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    color: var(--red);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  /* INFO BAR */
+  .info-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .info-bar label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .info-bar .field {
+    flex: 1;
+    min-width: 140px;
+  }
+  .info-bar .underline {
+    border-bottom: 2px solid var(--gray-200);
+    padding: 4px 0;
+    font-size: 1rem;
+    min-height: 28px;
+  }
+
+  /* TABLE STYLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+  th {
+    background: var(--red);
+    color: var(--white);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 12px;
+    text-align: left;
+  }
+  th:last-child { text-align: right; }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--gray-200);
+    font-size: 0.95rem;
+  }
+  td:last-child { text-align: right; font-weight: 600; }
+  .section-title td {
+    background: var(--off-white);
+    font-weight: 700;
+    color: var(--red);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--gray-200);
+    padding: 8px 12px;
+  }
+  .section-title td:last-child { text-align: left; }
+  .desc-td { color: var(--gray-800); }
+  .total td {
+    background: var(--off-white);
+    font-weight: 800;
+    font-size: 1.05rem;
+    border-top: 2px solid var(--red);
+    border-bottom: 3px double var(--red);
+  }
+  .total td:last-child { color: var(--red); }
+
+  .empty-row td { height: 32px; }
+
+  /* SUMMARY */
+  .summary-box {
+    border: 2px solid var(--red);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    background: var(--off-white);
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 1rem;
+  }
+  .summary-row.total {
+    border-top: 2px solid var(--red);
+    margin-top: 6px;
+    padding-top: 10px;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--red);
+  }
+
+  /* NOTES */
+  .notes-section { margin-bottom: 24px; }
+  .notes-section label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-600);
+    margin-bottom: 6px;
+  }
+  .notes-lines {
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 8px;
+    min-height: 80px;
+  }
+  .notes-lines .line { border-bottom: 1px solid var(--gray-100); height: 28px; }
+
+  /* SIGNATURE */
+  .signature-area {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+  }
+  .signature-area .sig-line {
+    flex: 1;
+    border-bottom: 2px solid var(--gray-800);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+    min-height: 30px;
+  }
+  .signature-area label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-600);
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  /* PRINT STYLES */
+  @media print {
+    body { padding: 20px; font-size: 11pt; }
+    .no-print { display: none !important; }
+    .info-bar .underline { border-bottom-color: #999; }
+    .notes-lines { border-color: #999; }
+    .signature-area .sig-line { border-bottom-color: #000; min-height: 24px; }
+    .empty-row td { height: 24px; }
+    @page { margin: 0.5in; }
+  }
+
+  /* PRINT BUTTON */
+  .print-btn {
+    display: inline-block;
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 24px;
+    transition: background 0.2s;
+  }
+  .print-btn:hover { background: var(--red-dark); }
+  @media print { .print-btn { display: none; } }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Print Cash Sheet</button>
+
+<div class="header">
+  <h1>🚐 Making Memories Transportation</h1>
+  <p>Daily Driver Cash Sheet</p>
+</div>
+
+<!-- INFO -->
+<div class="info-bar">
+  <div class="field">
+    <label>Date</label>
+    <div class="underline">&nbsp;</div>
+  </div>
+  <div class="field">
+    <label>Driver Name</label>
+    <div class="underline">&nbsp;</div>
+  </div>
+  <div class="field">
+    <label>Vehicle #</label>
+    <div class="underline">&nbsp;</div>
+  </div>
+  <div class="field">
+    <label>Shift</label>
+    <div class="underline">&nbsp;</div>
+  </div>
+</div>
+
+<!-- REVENUE -->
+<table>
+  <tr><th colspan="2">Revenue</th></tr>
+  <tr class="section-title"><td colspan="2">Trip Revenue</td></tr>
+  <tr>
+    <td class="desc-td">Cash Fares</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Credit / Card Fares</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">App / Booking Payments</td>
+    <td>$________</td>
+  </tr>
+  <tr class="section-title"><td colspan="2">Other Income</td></tr>
+  <tr>
+    <td class="desc-td">Tips — Cash</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Tips — Card / App</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Contract / Charter Trips</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Miscellaneous Income</td>
+    <td>$________</td>
+  </tr>
+  <tr class="total">
+    <td>Total Revenue</td>
+    <td>$________</td>
+  </tr>
+</table>
+
+<!-- EXPENSES -->
+<table>
+  <tr><th colspan="2">Expenses</th></tr>
+  <tr>
+    <td class="desc-td">Fuel</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Tolls</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Parking</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Vehicle Wash / Detail</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Maintenance (oil, tires, etc.)</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Supplies (water, snacks, etc.)</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Miscellaneous</td>
+    <td>$________</td>
+  </tr>
+  <tr class="total">
+    <td>Total Expenses</td>
+    <td>$________</td>
+  </tr>
+</table>
+
+<!-- SUMMARY -->
+<div class="summary-box">
+  <div class="summary-row">
+    <span>Total Revenue</span>
+    <span>$________</span>
+  </div>
+  <div class="summary-row">
+    <span>Total Expenses</span>
+    <span>$________</span>
+  </div>
+  <div class="summary-row total">
+    <span>Net Cash Due / Deposit</span>
+    <span>$________</span>
+  </div>
+  <div class="summary-row" style="margin-top:12px;font-size:0.85rem;color:var(--gray-600);">
+    <span>Breakdown of cash on hand:</span>
+    <span></span>
+  </div>
+  <div class="summary-row" style="font-size:0.9rem;">
+    <span style="padding-left:16px;">Bills ($20s / $10s / $5s / $1s)</span>
+    <span>___ / ___ / ___ / ___</span>
+  </div>
+  <div class="summary-row" style="font-size:0.9rem;">
+    <span style="padding-left:16px;">Coins</span>
+    <span>$____</span>
+  </div>
+</div>
+
+<!-- DEPOSIT INFO -->
+<table>
+  <tr><th colspan="2">Deposit</th></tr>
+  <tr>
+    <td class="desc-td">Deposited Amount</td>
+    <td>$________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Deposit Method (Cash / Check / App)</td>
+    <td>______________</td>
+  </tr>
+  <tr>
+    <td class="desc-td">Deposit Confirmation #</td>
+    <td>______________</td>
+  </tr>
+</table>
+
+<!-- NOTES -->
+<div class="notes-section">
+  <label>Notes / Special Circumstances</label>
+  <div class="notes-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+</div>
+
+<!-- SIGNATURE -->
+<div class="signature-area">
+  <div>
+    <div class="sig-line"></div>
+    <label>Driver Signature</label>
+  </div>
+  <div>
+    <div class="sig-line"></div>
+    <label>Manager / Admin Signature</label>
+  </div>
+  <div>
+    <div class="sig-line"></div>
+    <label>Date Reviewed</label>
+  </div>
+</div>
+
+<div class="footer">
+  Making Memories Transportation &bull; Phenix City, AL &bull; makingmemoriestransportation.com
+</div>
+
+</body>
+</html>
